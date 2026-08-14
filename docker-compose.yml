@@ -1,0 +1,25 @@
+# 用法:
+#   1) 把 ~/.email-mcp（config.json + tokens）准备好
+#   2) docker compose up -d
+#   3) 客户端连接 http://127.0.0.1:8788/mcp
+services:
+  email-mcp-gmail:
+    build: .
+    image: email-mcp:latest
+    container_name: email-mcp-gmail
+    command: ["gmail", "--transport", "http", "--port", "8788"]
+    ports:
+      - "127.0.0.1:8788:8788"   # 仅本机
+    volumes:
+      - ~/.email-mcp:/data      # 挂载凭据与 token
+    restart: unless-stopped
+
+  email-mcp-outlook:
+    image: email-mcp:latest
+    container_name: email-mcp-outlook
+    command: ["outlook", "--transport", "http", "--port", "8789"]
+    ports:
+      - "127.0.0.1:8789:8789"
+    volumes:
+      - ~/.email-mcp:/data
+    restart: unless-stopped

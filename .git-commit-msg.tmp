@@ -1,0 +1,11 @@
+feat: email-mcp 邮件 MCP 服务完整实现（M0-M4）
+
+- Gmail + Outlook 双服务，各 12 个 MCP 工具（搜索/读取/附件/发送/回复/草稿/标签/文件夹）
+- 首次启动引导：零内置密钥，setup 向导填写凭据 + OAuth 授权
+  （Gmail: PKCE 浏览器授权；Outlook: device code 授权）
+- token 自动刷新、敏感操作 confirm 门控、日志脱敏、凭据 0600 落盘
+- 双传输：stdio + streamable HTTP（仅本机监听 + DNS rebinding 防护）
+- status/doctor 诊断（含网络连通性与 token 有效性实测）
+- 测试：node:test 单测 8 项 + 6 个冒烟脚本（mock API + 真实 MCP 进程）
+- 部署：deploy-local.sh / deploy-remote.sh（systemd）/ Dockerfile / docker-compose
+- 文档：DESIGN.md + docs/01-04（凭据申请/首次启动/客户端接入）
