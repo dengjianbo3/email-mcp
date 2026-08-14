@@ -6,13 +6,25 @@
 
 ---
 
-## 1. 调研结论摘要（v0.1）
+## 1. 调研结论摘要（v0.1 + 2026-08 修订）
 
-- Gmail / Outlook 都**没有独立的 "MCP API"**。底层分别是 Gmail REST API 与
-  Microsoft Graph API，均基于 OAuth 2.0。
-- 官方托管 MCP：Google Workspace MCP（Google 生态）/ Microsoft 365 Work IQ MCP
-  （M365 企业租户）。均不适合"自用 + 任意 MCP 客户端"，故走自建。
-- 自建 = 编写 MCP server，内部调用 Gmail API / Graph API，凭据由使用者自己申请。
+- 邮件数据底层分别是 Gmail REST API 与 Microsoft Graph API，均基于 OAuth 2.0；
+  MCP 是对其上的封装。
+- **【2026-08 修订】Google 官方现已提供 Gmail 远程 MCP server**
+  （`https://gmailmcp.googleapis.com/mcp/v1`，需启用 `gmailmcp.googleapis.com`），
+  实测端点可访问。但注意：
+  - 仍为 **Developer Preview**（需加入 Google Workspace Developer Preview Program），
+    API 可能变化，不建议生产依赖；
+  - 工具集较窄（9 个）：`search_threads / get_thread / list_drafts / create_draft /
+    label_message / label_thread / unlabel_message / unlabel_thread / list_labels`，
+    **无发送/回复/附件下载/账号信息**；
+  - 客户端门槛：Antigravity 原生支持；Claude 需 Enterprise/Pro/Max/Team 订阅；
+    其他客户端需支持 OAuth 的远程 MCP host。
+- 其他官方托管：Google Workspace MCP（Google 生态）、Microsoft 365 Work IQ MCP
+  （M365 企业租户）。
+- Outlook **没有**对应的官方远程 MCP server（仅企业 Work IQ）。
+- 本项目走**自建**：能力完整（发送/回复/附件等 12×2 工具）、任意 MCP 客户端可用、
+  Outlook 一并覆盖、数据本地直连、无预览期风险。官方托管可作为 Google 生态内的补充。
 
 ## 2. 总体架构
 
