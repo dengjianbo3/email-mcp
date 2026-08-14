@@ -52,6 +52,7 @@ email-mcp outlook --transport http --port 8788   # HTTP 模式（远程/自研 A
 | [docs/02-microsoft-outlook-setup.md](docs/02-microsoft-outlook-setup.md) | Microsoft 凭据申请步骤 |
 | [docs/03-first-run-guide.md](docs/03-first-run-guide.md) | 首次启动走查（含环境变量方式） |
 | [docs/04-mcp-client-integration.md](docs/04-mcp-client-integration.md) | 接入 Claude Desktop / Cursor 等 |
+| [docs/06-official-gmail-mcp.md](docs/06-official-gmail-mcp.md) | 【备选】Google 官方远程 Gmail MCP 接入指南 |
 
 ## 命令参考
 
