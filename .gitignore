@@ -25,3 +25,6 @@ npm-debug.log*
 .DS_Store
 .idea/
 .vscode/
+
+# 临时文件
+*.tmp
