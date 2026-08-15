@@ -5,6 +5,8 @@ import { EmailMcpError } from "../core/errors.js";
 import { logger } from "../core/logger.js";
 import { readToken, writeToken } from "../core/tokens.js";
 import { openBrowser } from "../core/browser.js";
+import { netFetch, ensureProxyEnv } from "../core/net.js";
+ensureProxyEnv(); // 必须在任何 fetch 之前启用环境代理（Google/Microsoft 端点）
 
 /** 端点运行时读取环境变量（便于测试注入 mock，也允许运行时调整） */
 export function gmailAuthUrl(): string {
@@ -30,6 +32,17 @@ export function redirectUriFor(port: number): string {
   return `http://localhost:${port}/callback`;
 }
 
+const GMAIL_SCOPE_PREFIX = "https://www.googleapis.com/auth/";
+
+/**
+ * 将短名 scope（如 gmail.modify）展开为完整 URL 形式。
+ * 实测：Google 授权端点对未声明过短名的项目会返回 invalid_scope，
+ * 必须使用完整 URL 形式（如 https://www.googleapis.com/auth/gmail.modify）。
+ */
+export function expandScopes(scopes: string[]): string[] {
+  return scopes.map((s) => (s.startsWith("http") ? s : GMAIL_SCOPE_PREFIX + s));
+}
+
 export function buildAuthUrl(
   cfg: GmailConfig,
   redirectUri: string,
@@ -41,14 +54,15 @@ export function buildAuthUrl(
     client_id: cfg.clientId,
     redirect_uri: redirectUri,
     response_type: "code",
-    scope: scopes.join(" "),
+    scope: expandScopes(scopes).join(" "),
     code_challenge: challenge,
     code_challenge_method: "S256",
     access_type: "offline",
     prompt: "consent",
     state,
   });
-  if (cfg.clientSecret) params.set("client_secret", cfg.clientSecret);
+  // 注意：client_secret 绝不允许出现在授权 URL 中（Google 返回
+  // "Parameter not allowed for this message type" 400）；仅在 token 交换时使用。
   return `${gmailAuthUrl()}?${params.toString()}`;
 }
 
@@ -115,7 +129,7 @@ export interface TokenResponse {
 }
 
 async function tokenRequest(cfg: GmailConfig, params: URLSearchParams, action: string): Promise<TokenResponse> {
-  const res = await fetch(gmailTokenUrl(), {
+  const res = await netFetch(gmailTokenUrl(), {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: params,

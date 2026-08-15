@@ -3,6 +3,8 @@ import { EmailMcpError } from "../core/errors.js";
 import { logger } from "../core/logger.js";
 import { readToken, writeToken } from "../core/tokens.js";
 import { graphApiBase, refreshAccessToken } from "./oauth.js";
+import { netFetch, ensureProxyEnv } from "../core/net.js";
+ensureProxyEnv(); // 必须在任何 fetch 之前启用环境代理（Google/Microsoft 端点）
 
 export interface OutlookProfile {
   displayName?: string;
@@ -113,7 +115,7 @@ export class GraphApiClient {
     const url = graphApiBase() + path;
     let res: Response;
     try {
-      res = await fetch(url, {
+      res = await netFetch(url, {
         method: opts.method ?? "GET",
         headers: {
           Authorization: `Bearer ${token}`,

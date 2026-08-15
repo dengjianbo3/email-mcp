@@ -23,6 +23,8 @@ const transport = new StdioClientTransport({
   command: "node",
   args: ["dist/cli.js", provider],
   stderr: "inherit",
+  // SDK 默认只继承安全白名单 env（不含 HTTP_PROXY 等），必须显式传完整环境
+  env: process.env,
 });
 const client = new Client({ name: "mcp-console", version: "0.1.0" });
 try {

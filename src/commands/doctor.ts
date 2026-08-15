@@ -13,6 +13,7 @@ import { gmailApiBase } from "../gmail/client.js";
 import { GmailApiClient } from "../gmail/client.js";
 import { GraphApiClient } from "../outlook/client.js";
 import { graphApiBase } from "../outlook/oauth.js";
+import { netFetch } from "../core/net.js";
 
 /** 配置体检：配置/凭据/token/连通性/有效性，逐项检查并给出修复建议 */
 export async function doctorCmd(): Promise<void> {
@@ -57,7 +58,7 @@ export async function doctorCmd(): Promise<void> {
     for (const c of checks) {
       if (!c.enabled) continue;
       try {
-        const res = await fetch(c.url + "/", { method: "GET", signal: AbortSignal.timeout(6000) });
+        const res = await netFetch(c.url + "/", { method: "GET", signal: AbortSignal.timeout(6000) });
         report(c.name, true, `可达（HTTP ${res.status}）`);
       } catch (err) {
         const cause = (err as { cause?: { message?: string } }).cause;

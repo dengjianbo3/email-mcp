@@ -76,8 +76,8 @@ const server = createServer((req, res) => {
     send(200, { emailAddress: "me@gmail.com", messagesTotal: 42, threadsTotal: 40, historyId: "h1" });
   } else if (url.pathname === "/gmail/v1/users/me/messages") {
     send(200, { messages: [{ id: "msg1", threadId: "th1" }, { id: "msg2", threadId: "th2" }], nextPageToken: "page2", resultSizeEstimate: 2 });
-  } else if (url.pathname === "/gmail/v1/users/me/messages/msg1" && url.searchParams.get("format") === "metadata") {
-    check("metadata 请求带 metadataHeaders", url.searchParams.get("metadataHeaders") === "From,Subject,Date");
+  } else if (url.pathname === "/gmail/v1/users/me/messages/msg1" && url.searchParams.get("format") === "METADATA") {
+    check("metadata 请求带重复 metadataHeaders", url.searchParams.getAll("metadataHeaders").join(",") === "From,Subject,Date");
     send(200, { id: "msg1", threadId: "th1", snippet: "测试邮件", payload: { headers: [
       { name: "From", value: "Alice <alice@example.com>" },
       { name: "Subject", value: "你好，M1 冒烟" },
@@ -85,7 +85,7 @@ const server = createServer((req, res) => {
     ] } });
   } else if (url.pathname === "/gmail/v1/users/me/messages/msg1") {
     send(200, msg1Full);
-  } else if (url.pathname === "/gmail/v1/users/me/messages/msg2" && url.searchParams.get("format") === "metadata") {
+  } else if (url.pathname === "/gmail/v1/users/me/messages/msg2" && url.searchParams.get("format") === "METADATA") {
     send(200, { id: "msg2", threadId: "th2", snippet: "另一封", payload: { headers: [{ name: "From", value: "Bob <bob@example.com>" }, { name: "Subject", value: "Re: hi" }] } });
   } else if (url.pathname === "/gmail/v1/users/me/messages/msg1/attachments/att1") {
     send(200, attachmentsData.att1);

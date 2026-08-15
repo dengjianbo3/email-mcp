@@ -2,6 +2,8 @@ import type { OutlookConfig } from "../core/config.js";
 import { EmailMcpError } from "../core/errors.js";
 import { openBrowser } from "../core/browser.js";
 import { readToken, writeToken } from "../core/tokens.js";
+import { netFetch, ensureProxyEnv } from "../core/net.js";
+ensureProxyEnv(); // 必须在任何 fetch 之前启用环境代理（Google/Microsoft 端点）
 
 /** 端点运行时读取环境变量（便于测试注入 mock） */
 export function microsoftTokenUrl(tenant: string): string {
@@ -30,7 +32,7 @@ export interface TokenResponse {
 }
 
 async function tokenRequest(cfg: OutlookConfig, params: URLSearchParams, action: string): Promise<TokenResponse> {
-  const res = await fetch(microsoftTokenUrl(cfg.tenant), {
+  const res = await netFetch(microsoftTokenUrl(cfg.tenant), {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: params,
@@ -62,7 +64,7 @@ export interface DeviceCodeSession {
 
 /** 发起 device code 授权，返回一次性会话（含轮询等待） */
 export async function startDeviceCodeAuth(cfg: OutlookConfig): Promise<DeviceCodeSession> {
-  const res = await fetch(microsoftDeviceCodeUrl(cfg.tenant), {
+  const res = await netFetch(microsoftDeviceCodeUrl(cfg.tenant), {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ client_id: cfg.clientId, scope: cfg.scopes.join(" ") }),
@@ -94,7 +96,7 @@ export async function startDeviceCodeAuth(cfg: OutlookConfig): Promise<DeviceCod
           return;
         }
         try {
-          const res = await fetch(microsoftTokenUrl(cfg.tenant), {
+          const res = await netFetch(microsoftTokenUrl(cfg.tenant), {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: new URLSearchParams({

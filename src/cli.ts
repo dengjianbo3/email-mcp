@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import { PROVIDERS } from "./core/paths.js";
+import { ensureProxyEnv } from "./core/net.js";
+ensureProxyEnv(); // 必须在任何 fetch 之前启用环境代理（Google/Microsoft 端点）
 import type { Provider } from "./core/paths.js";
 import { startServer } from "./commands/start.js";
 import { setupProvider } from "./commands/setup.js";

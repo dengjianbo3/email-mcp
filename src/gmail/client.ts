@@ -1,4 +1,6 @@
 import { randomBytes } from "node:crypto";
+import { netFetch, ensureProxyEnv } from "../core/net.js";
+ensureProxyEnv(); // 必须在任何 fetch 之前启用环境代理（Google/Microsoft 端点）
 import type { GmailConfig } from "../core/config.js";
 import { EmailMcpError } from "../core/errors.js";
 import { logger } from "../core/logger.js";
@@ -87,7 +89,7 @@ export class GmailApiClient {
 
   private async request<T>(
     path: string,
-    params: Record<string, string> = {},
+    params: Record<string, string | string[]> = {},
     retried = false
   ): Promise<T> {
     return this.doRequest<T>(path, { params }, retried);
@@ -95,16 +97,23 @@ export class GmailApiClient {
 
   private async doRequest<T>(
     path: string,
-    opts: { params?: Record<string, string>; method?: string; body?: unknown } = {},
+    opts: { params?: Record<string, string | string[]>; method?: string; body?: unknown } = {},
     retried = false
   ): Promise<T> {
     const token = await this.getAccessToken();
     const url = new URL(gmailApiBase() + path);
-    for (const [k, v] of Object.entries(opts.params ?? {})) if (v) url.searchParams.set(k, v);
+    for (const [k, v] of Object.entries(opts.params ?? {})) {
+      // 数组值 → 重复 query 参数（Gmail 的 metadataHeaders 不接受逗号分隔）
+      if (Array.isArray(v)) {
+        for (const item of v) if (item) url.searchParams.append(k, item);
+      } else if (v) {
+        url.searchParams.set(k, v);
+      }
+    }
 
     let res: Response;
     try {
-      res = await fetch(url, {
+      res = await netFetch(url, {
         method: opts.method ?? "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -165,14 +174,16 @@ export class GmailApiClient {
   }
 
   async getMessage(id: string, format: string, metadataHeaders?: string[]): Promise<GmailMessageDetail> {
+    // Gmail API 的 format 枚举必须大写（FULL/METADATA/MINIMAL），小写会被忽略
+    const formatUpper = (format ?? "full").toUpperCase();
     const raw = await this.request<{
       id: string;
       threadId: string;
       snippet?: string;
       payload?: PayloadPart;
     }>("/gmail/v1/users/me/messages/" + id, {
-      format,
-      metadataHeaders: metadataHeaders?.join(",") ?? "",
+      format: formatUpper,
+      metadataHeaders: metadataHeaders ?? [],
     });
     const headers: Record<string, string> = {};
     for (const h of raw.payload?.headers ?? []) {

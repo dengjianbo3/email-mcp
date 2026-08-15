@@ -68,8 +68,8 @@ const server = createServer((req, res) => {
       gmailModifyBody = await bodyPromise();
       return send(200, { id: "msg1", labelIds: ["INBOX", "UNREAD"] });
     }
-    if (p === "/gmail/v1/users/me/messages/msg1" && url.searchParams.get("format") === "metadata") {
-      gmailReplyMeta = url.searchParams.get("metadataHeaders");
+    if (p === "/gmail/v1/users/me/messages/msg1" && url.searchParams.get("format") === "METADATA") {
+      gmailReplyMeta = url.searchParams.getAll("metadataHeaders").join(",");
       return send(200, {
         id: "msg1", threadId: "th-orig", snippet: "原文内容",
         payload: { headers: [

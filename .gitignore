@@ -8,6 +8,9 @@ dist/
 .env
 .env.local
 
+# 用户下载的 OAuth 凭据（Google/Microsoft 申请产物）
+test_keys/
+
 # user config & tokens (本工具将凭据保存在 ~/.email-mcp/，此处为兜底)
 config.json
 tokens/

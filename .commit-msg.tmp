@@ -1,0 +1,9 @@
+fix: 真实账号联调修复（Gmail OAuth 与网络层）+ 代理支持
+
+- OAuth 授权 URL 移除 client_secret（Google 400 拒绝）
+- scope 展开为完整 URL 形式（短名会被判 invalid_scope）
+- Gmail format 参数大写，metadataHeaders 用重复参数形式
+- 网络层新增 undici ProxyAgent：外部端点走代理，本地回环直连
+- mcp-console 显式继承完整环境（SDK 默认白名单会丢失代理变量）
+- 测试用户 access_denied、invalid_scope 等排障记录进 docs/05
+- 真实账号验证通过：profile/搜索/读正文/创建草稿
